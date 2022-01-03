@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.rwth_aachen.swc.oosc</groupId>
+    <artifactId>jhotdraw-application</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- use Java 11 -->
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <!-- add JHotDraw dependencies (as prebuilt JARs shipped with this project) -->
+        <dependency>
+            <groupId>org.jhotdraw7</groupId>
+            <artifactId>draw</artifactId>
+            <version>snapshot</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/jhotdraw/org.jhotdraw7.draw.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jhotdraw7</groupId>
+            <artifactId>application</artifactId>
+            <version>snapshot</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/jhotdraw/org.jhotdraw7.application.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jhotdraw7</groupId>
+            <artifactId>nanoxml</artifactId>
+            <version>snapshot</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/jhotdraw/org.jhotdraw7.nanoxml.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>net.n3</groupId>
+            <artifactId>nanoxml</artifactId>
+            <version>snapshot</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/jhotdraw/net.n3.nanoxml.jar</systemPath>
+        </dependency>
+    </dependencies>
+
+</project>

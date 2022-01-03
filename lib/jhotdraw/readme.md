@@ -1,0 +1,1 @@
+JHotDraw JARs built from [JHotDraw 7](https://github.com/wrandelshofer/jhotdraw/tree/077183faa06baa0688820507360c7bea9c48c065) using AdoptOpenJDK 11 and Ant.
