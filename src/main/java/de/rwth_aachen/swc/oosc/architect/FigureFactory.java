@@ -1,5 +1,9 @@
 package de.rwth_aachen.swc.oosc.architect;
 
+import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
 import org.jhotdraw.draw.*;
 import org.jhotdraw.draw.connector.*;
 import org.jhotdraw.draw.decoration.ArrowTip;
@@ -20,6 +24,15 @@ public class FigureFactory extends DefaultDOMFactory {
     private final static Object[][] CLASS_TAG_ARRAY = {
             {DefaultDrawing.class, "useCaseDiagramDrawing"},
             {QuadTreeDrawing.class, "drawing"},
+
+            {ImportedFloorPlanFigure.class, "importedFloorPlan"},
+            {WallFigure.class, "wall"},
+            {WindowFigure.class, "window"},
+            {BathtubFigure.class, "bathtub"},
+            {BedFigure.class, "bed"},
+            {ChairFigure.class, "chair"},
+            {PlantFigure.class, "plant"},
+            {TableFigure.class, "table"},
 
             {EllipseFigure.class, "ellipse"},
             {TextFigure.class, "text"},

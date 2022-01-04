@@ -1,5 +1,9 @@
 package de.rwth_aachen.swc.oosc.architect;
 
+import de.rwth_aachen.swc.oosc.architect.figures.floor.DoorFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
 import org.jhotdraw.annotation.Nullable;
 import org.jhotdraw.app.Application;
@@ -57,6 +61,7 @@ public class ApplicationModel extends DefaultApplicationModel {
     @Override
     public List<JToolBar> createToolBars(Application a, @Nullable View view) {
         ResourceBundleUtil labels = ResourceBundleUtil.getBundle("org.jhotdraw.draw.Labels");
+        ResourceBundleUtil architectLabels = ArchitectResourceBundle.getLabels();
         ArchitectView architectView = (ArchitectView) view;
         DrawingEditor editor = architectView == null ? getSharedEditor() : architectView.getEditor();
 
@@ -66,8 +71,14 @@ public class ApplicationModel extends DefaultApplicationModel {
         tb.setName(labels.getString("window.drawToolBar.title"));
         list.add(tb);
 
+        tb = new JToolBar();
+        addDefaultFloorPlanButtonsTo(tb, editor);
+        tb.setName(architectLabels.getString("window.floorPlanToolBar.title"));
+        list.add(tb);
+
+        tb = new JToolBar();
         addFurnitureButtonsTo(tb, editor);
-        tb.setName("Furniture");
+        tb.setName(architectLabels.getString("window.furnitureToolBar.title"));
         list.add(tb);
 
         tb = new JToolBar();
@@ -89,22 +100,48 @@ public class ApplicationModel extends DefaultApplicationModel {
                 ButtonFactory.createSelectionActions(editor));
     }
 
+    private void addDefaultFloorPlanButtonsTo(JToolBar tb, DrawingEditor editor) {
+        addDefaultFloorPlanButtonsTo(tb, editor,
+                ButtonFactory.createDrawingActions(editor),
+                ButtonFactory.createSelectionActions(editor));
+    }
+
     private void addFurnitureButtonsTo(JToolBar tb, DrawingEditor editor) {
         addDefaultFurnitureButtonsTo(tb, editor,
                 ButtonFactory.createDrawingActions(editor),
                 ButtonFactory.createSelectionActions(editor));
     }
 
+    public void addDefaultFloorPlanButtonsTo(JToolBar tb, final DrawingEditor editor,
+                                             Collection<Action> drawingActions,
+                                             Collection<Action> selectionActions) {
+        ResourceBundleUtil labels = ArchitectResourceBundle.getLabels();
+        ButtonFactory.addSelectionToolTo(tb, editor, drawingActions, selectionActions);
+        tb.addSeparator();
+
+        ButtonFactory.addToolTo(tb, editor, new ImageTool(new ImportedFloorPlanFigure()),
+                "edit.fp.importFloorPlan", labels);
+        tb.addSeparator();
+
+        ButtonFactory.addToolTo(tb, editor, new CreationTool(new WallFigure()),
+                "edit.fp.createWall", labels);
+        ButtonFactory.addToolTo(tb, editor, new CreationTool(new WindowFigure()),
+                "edit.fp.createWindow", labels);
+        ButtonFactory.addToolTo(tb, editor, new CreationTool(new DoorFigure()),
+                "edit.fp.createDoor", labels);
+
+    }
+
     public void addDefaultFurnitureButtonsTo(JToolBar tb,
-                                            final DrawingEditor editor,
-                                            Collection<Action> drawingActions,
-                                            Collection<Action> selectionActions) {
+                                             final DrawingEditor editor,
+                                             Collection<Action> drawingActions,
+                                             Collection<Action> selectionActions) {
         ResourceBundleUtil labels = ArchitectResourceBundle.getLabels();
         ButtonFactory.addSelectionToolTo(tb, editor, drawingActions, selectionActions);
         tb.addSeparator();
 
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new BedFigure()),
-                "edit.creatBed", labels);
+                "edit.createBed", labels);
 
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new TableFigure()),
                 "edit.createTable", labels);

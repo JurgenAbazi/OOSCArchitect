@@ -20,6 +20,7 @@ public abstract class FurnitureFigure extends ImageFigure {
         setAttributeEnabled(STROKE_COLOR, false);
         set(STROKE_WIDTH, 0d);
         setBufferedImage(getImageIcon());
+        setConnectable(false);
     }
 
     protected BufferedImage getImageIcon() {
