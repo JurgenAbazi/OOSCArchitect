@@ -22,6 +22,7 @@ import org.jhotdraw.gui.filechooser.ExtensionFileFilter;
 import org.jhotdraw.util.ResourceBundleUtil;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -171,7 +172,9 @@ public class ApplicationModel extends DefaultApplicationModel {
                                     DrawingEditor editor,
                                     ResourceBundleUtil resourceBundle) {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.addChoosableFileFilter(new ImageFileFilter());
+        FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter(
+                "Images(.jpg, .png)", "jpg", "png");
+        fileChooser.addChoosableFileFilter(fileNameExtensionFilter);
         fileChooser.setAcceptAllFileFilterUsed(false);
 
         int option = fileChooser.showOpenDialog(null);
