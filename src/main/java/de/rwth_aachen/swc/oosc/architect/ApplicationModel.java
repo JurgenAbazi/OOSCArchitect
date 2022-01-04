@@ -1,9 +1,9 @@
 package de.rwth_aachen.swc.oosc.architect;
 
 import de.rwth_aachen.swc.oosc.architect.figures.floor.DoorFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
 import org.jhotdraw.annotation.Nullable;
 import org.jhotdraw.app.Application;
@@ -22,6 +22,7 @@ import org.jhotdraw.gui.filechooser.ExtensionFileFilter;
 import org.jhotdraw.util.ResourceBundleUtil;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -154,6 +155,58 @@ public class ApplicationModel extends DefaultApplicationModel {
 
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new BathtubFigure()),
                 "edit.createBathtub", labels);
+
+        tb.addSeparator();
+
+        ButtonGroup group = (ButtonGroup) tb.getClientProperty("toolButtonGroup");
+        JToggleButton addFurnitureButton = new JToggleButton();
+        labels.configureToolBarButton(addFurnitureButton, "edit.addFurniture");
+        addFurnitureButton.addActionListener(e -> addFurnitureAction(tb, editor, labels));
+        addFurnitureButton.setFocusable(false);
+        group.add(addFurnitureButton);
+        tb.add(addFurnitureButton);
+    }
+
+    private void addFurnitureAction(JToolBar toolBar,
+                                    DrawingEditor editor,
+                                    ResourceBundleUtil resourceBundle) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.addChoosableFileFilter(new ImageFileFilter());
+        fileChooser.setAcceptAllFileFilterUsed(false);
+
+        int option = fileChooser.showOpenDialog(null);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            String fileName = file.getName().substring(0, file.getName().indexOf("."));
+            CustomFurnitureBean furnitureBean = new CustomFurnitureBean(file.getPath(), fileName);
+            createFurnitureButtonFromBean(furnitureBean, toolBar, editor, resourceBundle);
+        }
+    }
+
+    private void createFurnitureButtonFromBean(CustomFurnitureBean figure,
+                                               JToolBar toolBar,
+                                               DrawingEditor editor,
+                                               ResourceBundleUtil resourceBundle) {
+        FurnitureFigure furnitureFigure = new FurnitureFigure() {
+            @Override
+            protected String getIconPath() {
+                return figure.getPath();
+            }
+        };
+        JToggleButton jToggleButton = ButtonFactory.addToolTo(
+                toolBar, editor, new CreationTool(furnitureFigure), "", resourceBundle);
+        jToggleButton.setText(figure.getName());
+        jToggleButton.setToolTipText("Add " + figure.getName());
+
+        JPopupMenu jPopupMenu = new JPopupMenu();
+        JMenuItem removeFurnitureMenuItem = new JMenuItem("Remove from toolbar");
+        removeFurnitureMenuItem.addActionListener(e -> {
+            toolBar.remove(jToggleButton);
+            toolBar.revalidate();
+            toolBar.repaint();
+        });
+        jPopupMenu.add(removeFurnitureMenuItem);
+        jToggleButton.setComponentPopupMenu(jPopupMenu);
     }
 
     public void addDefaultCreationButtonsTo(JToolBar tb,
