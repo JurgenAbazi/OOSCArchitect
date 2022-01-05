@@ -13,6 +13,7 @@ import org.jhotdraw.draw.*;
 import org.jhotdraw.draw.action.ButtonFactory;
 import org.jhotdraw.draw.decoration.ArrowTip;
 import org.jhotdraw.draw.event.ToolListener;
+import org.jhotdraw.draw.io.ImageOutputFormat;
 import org.jhotdraw.draw.liner.CurvedLiner;
 import org.jhotdraw.draw.liner.ElbowLiner;
 import org.jhotdraw.draw.tool.*;
@@ -24,6 +25,7 @@ import org.jhotdraw.util.ResourceBundleUtil;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -123,6 +125,15 @@ public class ApplicationModel extends DefaultApplicationModel {
 
         ButtonFactory.addToolTo(tb, editor, new ImageTool(new ImportedFloorPlanFigure()),
                 "edit.fp.importFloorPlan", labels);
+        tb.addSeparator();
+
+        ButtonGroup group = (ButtonGroup) tb.getClientProperty("toolButtonGroup");
+        JToggleButton exportDrawingButton = new JToggleButton();
+        labels.configureToolBarButton(exportDrawingButton, "edit.exportDrawing");
+        exportDrawingButton.addActionListener(e -> exportDrawingAsImage(editor));
+        exportDrawingButton.setFocusable(false);
+        group.add(exportDrawingButton);
+        tb.add(exportDrawingButton);
         tb.addSeparator();
 
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new WallFigure()),
@@ -250,6 +261,43 @@ public class ApplicationModel extends DefaultApplicationModel {
         ButtonFactory.addToolTo(tb, editor, new TextAreaCreationTool(new TextAreaFigure()), "edit.createTextArea", labels);
         ButtonFactory.addToolTo(tb, editor, new ImageTool(new ImageFigure()), "edit.createImage", labels);
     }
+
+    /**
+     * Export the drawing of the editor as a PNG.
+     * Shows a <code>JFileChooser</code> to select the directory where the image will be saved.
+     *
+     * @param editor The editor containing the drawing to be exported
+     */
+    private void exportDrawingAsImage(final DrawingEditor editor) {
+        try {
+            JFileChooser fc = new JFileChooser();
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                String name = "\\" + ZonedDateTime.now().toInstant().toEpochMilli() + ".png";
+                File file = new File(fc.getSelectedFile().getAbsolutePath() + name);
+
+                // CANVAS_WIDTH and CANVAS_HEIGHT are null. This causes an exception to be thrown internally
+                // in the ImageOutputFormat class when attempting to convert the drawings to an image.
+                // To solve this problem we use a hacky solution, where we explicitly set them to the width
+                // and height of the drawing area and later restore them to null (so that the canvas size in
+                // the application does not change).
+                Drawing drawing = editor.getActiveView().getDrawing();
+                drawing.set(AttributeKeys.CANVAS_WIDTH, drawing.getDrawingArea().getWidth());
+                drawing.set(AttributeKeys.CANVAS_HEIGHT, drawing.getDrawingArea().getHeight());
+
+                ImageOutputFormat imageOutputFormat = new ImageOutputFormat();
+                imageOutputFormat.write(file, drawing);
+
+                drawing.set(AttributeKeys.CANVAS_WIDTH, null);
+                drawing.set(AttributeKeys.CANVAS_HEIGHT, null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 
     /**
      * Set up file open dialog
