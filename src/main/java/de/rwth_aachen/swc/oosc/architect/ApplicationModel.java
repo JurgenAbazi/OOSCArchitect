@@ -5,6 +5,7 @@ import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
+import de.rwth_aachen.swc.oosc.architect.figures.furnitures.builder.CustomFurnitureFigureFluentBuilder;
 import org.jhotdraw.annotation.Nullable;
 import org.jhotdraw.app.Application;
 import org.jhotdraw.app.DefaultApplicationModel;
@@ -178,12 +179,9 @@ public class ApplicationModel extends DefaultApplicationModel {
                                                JToolBar toolBar,
                                                DrawingEditor editor,
                                                ResourceBundleUtil resourceBundle) {
-        FurnitureFigure furnitureFigure = new FurnitureFigure() {
-            @Override
-            protected String getIconPath() {
-                return file.getPath();
-            }
-        };
+        FurnitureFigure furnitureFigure = CustomFurnitureFigureFluentBuilder.getInstance()
+                .setImagePath(file.getPath())
+                .build();
         JToggleButton jToggleButton = ButtonFactory.addToolTo(
                 toolBar, editor, new CreationTool(furnitureFigure), "", resourceBundle);
         String fileName = file.getName().substring(0, file.getName().indexOf("."));
@@ -236,7 +234,6 @@ public class ApplicationModel extends DefaultApplicationModel {
                     null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     /**
      * Set up file open dialog

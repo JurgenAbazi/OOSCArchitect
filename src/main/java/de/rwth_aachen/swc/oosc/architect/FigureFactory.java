@@ -28,6 +28,7 @@ public class FigureFactory extends DefaultDOMFactory {
             {ImportedFloorPlanFigure.class, "importedFloorPlan"},
             {WallFigure.class, "wall"},
             {WindowFigure.class, "window"},
+            {FurnitureFigure.class, "furniture"},
             {BathtubFigure.class, "bathtub"},
             {BedFigure.class, "bed"},
             {ChairFigure.class, "chair"},

@@ -9,40 +9,40 @@ import java.io.IOException;
 
 import static org.jhotdraw.draw.AttributeKeys.*;
 
-public abstract class FurnitureFigure extends ImageFigure {
-    private BufferedImage furnitureIcon;
+public class FurnitureFigure extends ImageFigure {
+    private BufferedImage furnitureImage;
+    private String imagePath = "";
 
-    protected FurnitureFigure() {
+    public FurnitureFigure() {
         super();
         set(FILL_COLOR, null);
         setAttributeEnabled(FILL_COLOR, false);
         set(STROKE_COLOR, null);
         setAttributeEnabled(STROKE_COLOR, false);
         set(STROKE_WIDTH, 0d);
-        setBufferedImage(getImageIcon());
+        setBufferedImage(getFurnitureImage());
         setConnectable(false);
     }
 
-    protected BufferedImage getImageIcon() {
-        if (getFurnitureIcon() == null) {
-            File file = new File(getIconPath());
+    private BufferedImage getFurnitureImage() {
+        if (furnitureImage == null) {
+            File file = new File(getImagePath());
             try {
-                setFurnitureIcon(ImageIO.read(file));
+                furnitureImage = ImageIO.read(file);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return getFurnitureIcon();
+        return furnitureImage;
     }
 
-    protected BufferedImage getFurnitureIcon() {
-        return furnitureIcon;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    protected void setFurnitureIcon(BufferedImage furnitureIcon) {
-        this.furnitureIcon = furnitureIcon;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+        furnitureImage = null;
+        setBufferedImage(getFurnitureImage());
     }
-
-    protected abstract String getIconPath();
-
 }
