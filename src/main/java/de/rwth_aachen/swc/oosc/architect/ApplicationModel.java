@@ -9,14 +9,14 @@ import org.jhotdraw.annotation.Nullable;
 import org.jhotdraw.app.Application;
 import org.jhotdraw.app.DefaultApplicationModel;
 import org.jhotdraw.app.View;
-import org.jhotdraw.draw.*;
+import org.jhotdraw.draw.AttributeKeys;
+import org.jhotdraw.draw.DefaultDrawingEditor;
+import org.jhotdraw.draw.Drawing;
+import org.jhotdraw.draw.DrawingEditor;
 import org.jhotdraw.draw.action.ButtonFactory;
-import org.jhotdraw.draw.decoration.ArrowTip;
-import org.jhotdraw.draw.event.ToolListener;
 import org.jhotdraw.draw.io.ImageOutputFormat;
-import org.jhotdraw.draw.liner.CurvedLiner;
-import org.jhotdraw.draw.liner.ElbowLiner;
-import org.jhotdraw.draw.tool.*;
+import org.jhotdraw.draw.tool.CreationTool;
+import org.jhotdraw.draw.tool.ImageTool;
 import org.jhotdraw.gui.JFileURIChooser;
 import org.jhotdraw.gui.URIChooser;
 import org.jhotdraw.gui.filechooser.ExtensionFileFilter;
@@ -30,13 +30,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.jhotdraw.draw.AttributeKeys.END_DECORATION;
-
 public class ApplicationModel extends DefaultApplicationModel {
 
     private DefaultDrawingEditor sharedEditor;
-    private ButtonGroup selectionButtonGroup;
-    private ToolListener toolHandler;
 
     /**
      * File extension used for opening & saving our drawings.
@@ -71,11 +67,6 @@ public class ApplicationModel extends DefaultApplicationModel {
 
         LinkedList<JToolBar> list = new LinkedList<>();
         JToolBar tb = new JToolBar();
-        addCreationButtonsTo(tb, editor);
-        tb.setName(labels.getString("window.drawToolBar.title"));
-        list.add(tb);
-
-        tb = new JToolBar();
         addDefaultFloorPlanButtonsTo(tb, editor);
         tb.setName(architectLabels.getString("window.floorPlanToolBar.title"));
         list.add(tb);
@@ -86,22 +77,11 @@ public class ApplicationModel extends DefaultApplicationModel {
         list.add(tb);
 
         tb = new JToolBar();
-        ButtonFactory.addAttributesButtonsTo(tb, editor);
-        tb.setName(labels.getString("window.attributesToolBar.title"));
-        list.add(tb);
-
-        tb = new JToolBar();
         ButtonFactory.addAlignmentButtonsTo(tb, editor);
         tb.setName(labels.getString("window.alignmentToolBar.title"));
         list.add(tb);
 
         return list;
-    }
-
-    private void addCreationButtonsTo(JToolBar tb, DrawingEditor editor) {
-        addDefaultCreationButtonsTo(tb, editor,
-                ButtonFactory.createDrawingActions(editor),
-                ButtonFactory.createSelectionActions(editor));
     }
 
     private void addDefaultFloorPlanButtonsTo(JToolBar tb, DrawingEditor editor) {
@@ -173,15 +153,15 @@ public class ApplicationModel extends DefaultApplicationModel {
         ButtonGroup group = (ButtonGroup) tb.getClientProperty("toolButtonGroup");
         JToggleButton addFurnitureButton = new JToggleButton();
         labels.configureToolBarButton(addFurnitureButton, "edit.addFurniture");
-        addFurnitureButton.addActionListener(e -> addFurnitureAction(tb, editor, labels));
+        addFurnitureButton.addActionListener(e -> addCustomFurnitureAction(tb, editor, labels));
         addFurnitureButton.setFocusable(false);
         group.add(addFurnitureButton);
         tb.add(addFurnitureButton);
     }
 
-    private void addFurnitureAction(JToolBar toolBar,
-                                    DrawingEditor editor,
-                                    ResourceBundleUtil resourceBundle) {
+    private void addCustomFurnitureAction(JToolBar toolBar,
+                                          DrawingEditor editor,
+                                          ResourceBundleUtil resourceBundle) {
         JFileChooser fileChooser = new JFileChooser();
         FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter(
                 "Images(.jpg, .png)", "jpg", "png");
@@ -190,27 +170,25 @@ public class ApplicationModel extends DefaultApplicationModel {
 
         int option = fileChooser.showOpenDialog(null);
         if (option == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            String fileName = file.getName().substring(0, file.getName().indexOf("."));
-            CustomFurnitureBean furnitureBean = new CustomFurnitureBean(file.getPath(), fileName);
-            createFurnitureButtonFromBean(furnitureBean, toolBar, editor, resourceBundle);
+            createFurnitureButtonFromFile(fileChooser.getSelectedFile(), toolBar, editor, resourceBundle);
         }
     }
 
-    private void createFurnitureButtonFromBean(CustomFurnitureBean figure,
+    private void createFurnitureButtonFromFile(File file,
                                                JToolBar toolBar,
                                                DrawingEditor editor,
                                                ResourceBundleUtil resourceBundle) {
         FurnitureFigure furnitureFigure = new FurnitureFigure() {
             @Override
             protected String getIconPath() {
-                return figure.getPath();
+                return file.getPath();
             }
         };
         JToggleButton jToggleButton = ButtonFactory.addToolTo(
                 toolBar, editor, new CreationTool(furnitureFigure), "", resourceBundle);
-        jToggleButton.setText(figure.getName());
-        jToggleButton.setToolTipText("Add " + figure.getName());
+        String fileName = file.getName().substring(0, file.getName().indexOf("."));
+        jToggleButton.setText(fileName);
+        jToggleButton.setToolTipText("Add " + fileName);
 
         JPopupMenu jPopupMenu = new JPopupMenu();
         JMenuItem removeFurnitureMenuItem = new JMenuItem("Remove from toolbar");
@@ -221,45 +199,6 @@ public class ApplicationModel extends DefaultApplicationModel {
         });
         jPopupMenu.add(removeFurnitureMenuItem);
         jToggleButton.setComponentPopupMenu(jPopupMenu);
-    }
-
-    public void addDefaultCreationButtonsTo(JToolBar tb,
-                                            final DrawingEditor editor,
-                                            Collection<Action> drawingActions,
-                                            Collection<Action> selectionActions) {
-        ResourceBundleUtil labels = ResourceBundleUtil.getBundle("org.jhotdraw.draw.Labels");
-
-        ButtonFactory.addSelectionToolTo(tb, editor, drawingActions, selectionActions);
-        this.selectionButtonGroup = (ButtonGroup) tb.getClientProperty("toolButtonGroup");
-        this.toolHandler = (ToolListener) tb.getClientProperty("toolHandler");
-        tb.addSeparator();
-
-        AbstractAttributedFigure af;
-        CreationTool ct;
-        ConnectionTool cnt;
-        ConnectionFigure lc;
-
-        ButtonFactory.addToolTo(tb, editor, new CreationTool(new RectangleFigure()), "edit.createRectangle", labels);
-        ButtonFactory.addToolTo(tb, editor, new CreationTool(new RoundRectangleFigure()), "edit.createRoundRectangle", labels);
-        ButtonFactory.addToolTo(tb, editor, new CreationTool(new EllipseFigure()), "edit.createEllipse", labels);
-        ButtonFactory.addToolTo(tb, editor, new CreationTool(new DiamondFigure()), "edit.createDiamond", labels);
-        ButtonFactory.addToolTo(tb, editor, new CreationTool(new TriangleFigure()), "edit.createTriangle", labels);
-        ButtonFactory.addToolTo(tb, editor, new CreationTool(new LineFigure()), "edit.createLine", labels);
-        ButtonFactory.addToolTo(tb, editor, ct = new CreationTool(new LineFigure()), "edit.createArrow", labels);
-        af = (AbstractAttributedFigure) ct.getPrototype();
-        af.set(END_DECORATION, new ArrowTip(0.35, 12, 11.3));
-        ButtonFactory.addToolTo(tb, editor, new ConnectionTool(new LineConnectionFigure()), "edit.createLineConnection", labels);
-        ButtonFactory.addToolTo(tb, editor, cnt = new ConnectionTool(new LineConnectionFigure()), "edit.createElbowConnection", labels);
-        lc = cnt.getPrototype();
-        lc.setLiner(new ElbowLiner());
-        ButtonFactory.addToolTo(tb, editor, cnt = new ConnectionTool(new LineConnectionFigure()), "edit.createCurvedConnection", labels);
-        lc = cnt.getPrototype();
-        lc.setLiner(new CurvedLiner());
-        ButtonFactory.addToolTo(tb, editor, new BezierTool(new BezierFigure()), "edit.createScribble", labels);
-        ButtonFactory.addToolTo(tb, editor, new BezierTool(new BezierFigure(true)), "edit.createPolygon", labels);
-        ButtonFactory.addToolTo(tb, editor, new TextCreationTool(new TextFigure()), "edit.createText", labels);
-        ButtonFactory.addToolTo(tb, editor, new TextAreaCreationTool(new TextAreaFigure()), "edit.createTextArea", labels);
-        ButtonFactory.addToolTo(tb, editor, new ImageTool(new ImageFigure()), "edit.createImage", labels);
     }
 
     /**
