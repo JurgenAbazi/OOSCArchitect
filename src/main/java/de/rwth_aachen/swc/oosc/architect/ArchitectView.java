@@ -24,7 +24,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
 public class ArchitectView extends AbstractView {
+    /**
+     * Each DrawView uses its own undo redo manager.
+     * Allows for undoing and redoing actions per view.
+     */
     private final UndoRedoManager undo;
+
+    /**
+     * Depending on the type of application, there may be one editor
+     * per view, or a single shared editor for all views.
+     */
     private DrawingEditor editor;
 
     public ArchitectView() {
@@ -84,6 +93,7 @@ public class ArchitectView extends AbstractView {
     /**
      * Creates a Pageable object for printing the view.
      */
+    @SuppressWarnings("unused")
     public Pageable createPageable() {
         return new DrawingPageable(view.getDrawing());
     }

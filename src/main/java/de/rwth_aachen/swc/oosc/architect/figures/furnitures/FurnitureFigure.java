@@ -1,11 +1,10 @@
 package de.rwth_aachen.swc.oosc.architect.figures.furnitures;
 
 import org.jhotdraw.draw.ImageFigure;
+import org.jhotdraw.draw.handle.Handle;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.util.Collection;
 
 import static org.jhotdraw.draw.AttributeKeys.*;
 
@@ -26,12 +25,7 @@ public class FurnitureFigure extends ImageFigure {
 
     private BufferedImage getFurnitureImage() {
         if (furnitureImage == null) {
-            File file = new File(getImagePath());
-            try {
-                furnitureImage = ImageIO.read(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            furnitureImage = ImageUtils.getBufferedImageFromPath(getImagePath());
         }
         return furnitureImage;
     }
@@ -44,5 +38,14 @@ public class FurnitureFigure extends ImageFigure {
         this.imagePath = imagePath;
         furnitureImage = null;
         setBufferedImage(getFurnitureImage());
+    }
+
+    @Override
+    public Collection<Handle> createHandles(int detailLevel) {
+        Collection<Handle> handles = super.createHandles(detailLevel);
+        if (detailLevel == 0) {
+            handles.add(new ImageFigureOrientationHandle(this));
+        }
+        return handles;
     }
 }
