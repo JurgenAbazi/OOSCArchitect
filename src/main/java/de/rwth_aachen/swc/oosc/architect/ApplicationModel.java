@@ -1,9 +1,6 @@
 package de.rwth_aachen.swc.oosc.architect;
 
-import de.rwth_aachen.swc.oosc.architect.figures.floor.DoorFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
+import de.rwth_aachen.swc.oosc.architect.figures.floor.*;
 import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
 import de.rwth_aachen.swc.oosc.architect.figures.furnitures.builder.CustomFurnitureFigureFluentBuilder;
 import org.jhotdraw.annotation.Nullable;
@@ -25,6 +22,7 @@ import org.jhotdraw.util.ResourceBundleUtil;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -117,6 +115,8 @@ public class ApplicationModel extends DefaultApplicationModel {
         tb.add(exportDrawingButton);
         tb.addSeparator();
 
+        ButtonFactory.addToolTo(tb, editor, new CreationTool(new FloorFigure()),
+                "edit.fp.createFloor", labels);
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new WallFigure()),
                 "edit.fp.createWall", labels);
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new WindowFigure()),

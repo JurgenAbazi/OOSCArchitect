@@ -1,5 +1,6 @@
 package de.rwth_aachen.swc.oosc.architect;
 
+import de.rwth_aachen.swc.oosc.architect.figures.floor.FloorFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
 import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
@@ -26,6 +27,7 @@ public class FigureFactory extends DefaultDOMFactory {
             {QuadTreeDrawing.class, "drawing"},
 
             {ImportedFloorPlanFigure.class, "importedFloorPlan"},
+            {FloorFigure.class, "floor"},
             {WallFigure.class, "wall"},
             {WindowFigure.class, "window"},
             {FurnitureFigure.class, "furniture"},
