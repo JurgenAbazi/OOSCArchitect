@@ -1,6 +1,6 @@
-package de.rwth_aachen.swc.oosc.architect.figures.furnitures.builder;
+package de.rwth_aachen.swc.oosc.group13.figures.furnitures.builder;
 
-import de.rwth_aachen.swc.oosc.architect.figures.furnitures.FurnitureFigure;
+import de.rwth_aachen.swc.oosc.group13.figures.furnitures.FurnitureFigure;
 
 /**
  * Class used for creating custom furniture figures.

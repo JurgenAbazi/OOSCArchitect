@@ -1,4 +1,4 @@
-package de.rwth_aachen.swc.oosc.architect.figures.furnitures;
+package de.rwth_aachen.swc.oosc.group13.figures.furnitures;
 
 public class BedFigure extends FurnitureFigure {
     private static final String BED_ICON_PATH_NAME = "src\\main\\resources\\images\\bedIcon.png";

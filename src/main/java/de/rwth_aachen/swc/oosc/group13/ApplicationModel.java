@@ -1,8 +1,8 @@
-package de.rwth_aachen.swc.oosc.architect;
+package de.rwth_aachen.swc.oosc.group13;
 
-import de.rwth_aachen.swc.oosc.architect.figures.floor.*;
-import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
-import de.rwth_aachen.swc.oosc.architect.figures.furnitures.builder.CustomFurnitureFigureFluentBuilder;
+import de.rwth_aachen.swc.oosc.group13.figures.floor.*;
+import de.rwth_aachen.swc.oosc.group13.figures.furnitures.*;
+import de.rwth_aachen.swc.oosc.group13.figures.furnitures.builder.CustomFurnitureFigureFluentBuilder;
 import org.jhotdraw.annotation.Nullable;
 import org.jhotdraw.app.Application;
 import org.jhotdraw.app.DefaultApplicationModel;
@@ -131,8 +131,9 @@ public class ApplicationModel extends DefaultApplicationModel {
                                              Collection<Action> drawingActions,
                                              Collection<Action> selectionActions) {
         ResourceBundleUtil labels = ArchitectResourceBundle.getLabels();
-        ButtonFactory.addSelectionToolTo(tb, editor, drawingActions, selectionActions);
-        tb.addSeparator();
+        JToggleButton selectionButton = ButtonFactory
+                .addSelectionToolTo(tb, editor, drawingActions, selectionActions);
+        selectionButton.setVisible(false);
 
         ButtonFactory.addToolTo(tb, editor, new CreationTool(new BedFigure()),
                 "edit.createBed", labels);

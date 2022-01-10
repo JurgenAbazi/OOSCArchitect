@@ -1,4 +1,4 @@
-package de.rwth_aachen.swc.oosc.architect.figures.floor;
+package de.rwth_aachen.swc.oosc.group13.figures.floor;
 
 import org.jhotdraw.draw.RectangleFigure;
 

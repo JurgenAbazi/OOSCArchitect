@@ -1,19 +1,16 @@
-package de.rwth_aachen.swc.oosc.architect.figures.floor;
+package de.rwth_aachen.swc.oosc.group13.figures.floor;
 
-import org.jhotdraw.draw.AttributeKeys;
 import org.jhotdraw.draw.LineFigure;
 
-import static org.jhotdraw.draw.AttributeKeys.STROKE_TYPE;
 import static org.jhotdraw.draw.AttributeKeys.STROKE_WIDTH;
 
-public class WindowFigure extends LineFigure {
+public class WallFigure extends LineFigure {
     /**
      * Default Constructor.
-     * Creates a double stroke black line.
+     * Creates a thick black line.
      */
-    public WindowFigure() {
-        set(STROKE_WIDTH, 4d);
-        set(STROKE_TYPE, AttributeKeys.StrokeType.DOUBLE);
+    public WallFigure() {
+        set(STROKE_WIDTH, 12d);
     }
 
     /**

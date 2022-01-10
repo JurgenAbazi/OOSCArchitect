@@ -1,10 +1,7 @@
-package de.rwth_aachen.swc.oosc.architect;
+package de.rwth_aachen.swc.oosc.group13;
 
-import de.rwth_aachen.swc.oosc.architect.figures.floor.FloorFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.ImportedFloorPlanFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.WallFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.floor.WindowFigure;
-import de.rwth_aachen.swc.oosc.architect.figures.furnitures.*;
+import de.rwth_aachen.swc.oosc.group13.figures.floor.*;
+import de.rwth_aachen.swc.oosc.group13.figures.furnitures.*;
 import org.jhotdraw.draw.*;
 import org.jhotdraw.draw.connector.*;
 import org.jhotdraw.draw.decoration.ArrowTip;
@@ -28,6 +25,7 @@ public class FigureFactory extends DefaultDOMFactory {
 
             {ImportedFloorPlanFigure.class, "importedFloorPlan"},
             {FloorFigure.class, "floor"},
+            {DoorFigure.class, "door"},
             {WallFigure.class, "wall"},
             {WindowFigure.class, "window"},
             {FurnitureFigure.class, "furniture"},

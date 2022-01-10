@@ -1,18 +1,19 @@
-package de.rwth_aachen.swc.oosc.architect.figures.floor;
+package de.rwth_aachen.swc.oosc.group13.figures.floor;
 
+import org.jhotdraw.draw.AttributeKeys;
 import org.jhotdraw.draw.LineFigure;
 
-import static org.jhotdraw.draw.AttributeKeys.STROKE_DASHES;
+import static org.jhotdraw.draw.AttributeKeys.STROKE_TYPE;
 import static org.jhotdraw.draw.AttributeKeys.STROKE_WIDTH;
 
-public class DoorFigure extends LineFigure {
+public class WindowFigure extends LineFigure {
     /**
      * Default Constructor.
-     * Creates a dashed line.
+     * Creates a double stroke black line.
      */
-    public DoorFigure() {
+    public WindowFigure() {
         set(STROKE_WIDTH, 4d);
-        set(STROKE_DASHES, new double[]{2, 2});
+        set(STROKE_TYPE, AttributeKeys.StrokeType.DOUBLE);
     }
 
     /**

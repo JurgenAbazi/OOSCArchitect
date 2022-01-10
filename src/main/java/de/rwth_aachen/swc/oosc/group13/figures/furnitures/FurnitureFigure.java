@@ -1,4 +1,4 @@
-package de.rwth_aachen.swc.oosc.architect.figures.furnitures;
+package de.rwth_aachen.swc.oosc.group13.figures.furnitures;
 
 import org.jhotdraw.draw.ImageFigure;
 import org.jhotdraw.draw.handle.Handle;

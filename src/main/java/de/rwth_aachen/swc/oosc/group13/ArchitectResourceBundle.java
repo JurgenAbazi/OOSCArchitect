@@ -1,4 +1,4 @@
-package de.rwth_aachen.swc.oosc.architect;
+package de.rwth_aachen.swc.oosc.group13;
 
 import org.jhotdraw.util.ResourceBundleUtil;
 
