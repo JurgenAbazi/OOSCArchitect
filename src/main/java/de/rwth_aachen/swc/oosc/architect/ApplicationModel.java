@@ -219,8 +219,9 @@ public class ApplicationModel extends DefaultApplicationModel {
                 // and height of the drawing area and later restore them to null (so that the canvas size in
                 // the application does not change).
                 Drawing drawing = editor.getActiveView().getDrawing();
-                drawing.set(AttributeKeys.CANVAS_WIDTH, drawing.getDrawingArea().getWidth());
-                drawing.set(AttributeKeys.CANVAS_HEIGHT, drawing.getDrawingArea().getHeight());
+                Rectangle2D.Double drawingArea = drawing.getDrawingArea();
+                drawing.set(AttributeKeys.CANVAS_WIDTH, drawingArea.getWidth() + drawingArea.getX());
+                drawing.set(AttributeKeys.CANVAS_HEIGHT, drawingArea.getHeight() + drawingArea.getY());
 
                 ImageOutputFormat imageOutputFormat = new ImageOutputFormat();
                 imageOutputFormat.write(file, drawing);
