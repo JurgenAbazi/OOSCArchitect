@@ -1,27 +1,15 @@
 package de.rwth_aachen.swc.oosc.group13;
 
-import com.google.gson.Gson;
 import de.rwth_aachen.swc.oosc.group13.figures.floor.*;
 import de.rwth_aachen.swc.oosc.group13.figures.furnitures.*;
 import de.rwth_aachen.swc.oosc.group13.figures.furnitures.builder.CustomFurnitureFigureFluentBuilder;
-import de.rwth_aachen.swc.oosc.group13.http.CircuitBreaker;
-import de.rwth_aachen.swc.oosc.group13.http.ImagePublishRunnable;
-import de.rwth_aachen.swc.oosc.group13.http.gson.GsonHelper;
-import de.rwth_aachen.swc.oosc.group13.http.gson.ImageResource;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.jhotdraw.annotation.Nullable;
 import org.jhotdraw.app.Application;
 import org.jhotdraw.app.DefaultApplicationModel;
 import org.jhotdraw.app.View;
-import org.jhotdraw.draw.AttributeKeys;
 import org.jhotdraw.draw.DefaultDrawingEditor;
-import org.jhotdraw.draw.Drawing;
 import org.jhotdraw.draw.DrawingEditor;
 import org.jhotdraw.draw.action.ButtonFactory;
-import org.jhotdraw.draw.io.ImageOutputFormat;
 import org.jhotdraw.draw.tool.CreationTool;
 import org.jhotdraw.draw.tool.ImageTool;
 import org.jhotdraw.gui.JFileURIChooser;
@@ -31,14 +19,12 @@ import org.jhotdraw.util.ResourceBundleUtil;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.geom.Rectangle2D;
-import java.io.*;
+import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.UUID;
 
 public class ApplicationModel extends DefaultApplicationModel {
 
@@ -222,34 +208,6 @@ public class ApplicationModel extends DefaultApplicationModel {
     }
 
     /**
-     * Uses the <code>ImageOutputFormat</code> class of JHotDraw to write the current
-     * drawing on the <code>OutputStream</code> which is passed as an argument to the
-     * method.
-     *
-     * @param editor The editor containing the drawing to be exported.
-     * @param stream The output stream being written on.
-     * @throws IOException Error writing on the stream. To be handled by the caller.
-     */
-    public void writeImageOutputFormatOnOutputStream(final DrawingEditor editor,
-                                                     OutputStream stream) throws IOException {
-        // CANVAS_WIDTH and CANVAS_HEIGHT are null. This causes an exception to be thrown internally
-        // in the ImageOutputFormat class when attempting to convert the drawings to an image.
-        // To solve this problem we use a hacky solution, where we explicitly set them to the width
-        // and height of the drawing area and later restore them to null (so that the canvas size in
-        // the application does not change).
-        Drawing drawing = editor.getActiveView().getDrawing();
-        Rectangle2D.Double drawingArea = drawing.getDrawingArea();
-        drawing.set(AttributeKeys.CANVAS_WIDTH, drawingArea.getWidth() + (drawingArea.getX() * 2));
-        drawing.set(AttributeKeys.CANVAS_HEIGHT, drawingArea.getHeight() + (drawingArea.getY() * 2));
-
-        ImageOutputFormat imageOutputFormat = new ImageOutputFormat();
-        imageOutputFormat.write(stream, drawing);
-
-        drawing.set(AttributeKeys.CANVAS_WIDTH, null);
-        drawing.set(AttributeKeys.CANVAS_HEIGHT, null);
-    }
-
-    /**
      * Export the drawing of the editor as a PNG.
      * Shows a <code>JFileChooser</code> to select the directory where the image will be saved.
      *
@@ -261,9 +219,8 @@ public class ApplicationModel extends DefaultApplicationModel {
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                 String name = "\\" + ZonedDateTime.now().toInstant().toEpochMilli() + ".png";
-                File file = new File(fc.getSelectedFile().getAbsolutePath() + name);
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-                writeImageOutputFormatOnOutputStream(editor, bos);
+                ExportDrawingController.exportDrawingAsImage(editor.getActiveView().getDrawing(),
+                        fc.getSelectedFile().getAbsolutePath(), name);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -273,70 +230,18 @@ public class ApplicationModel extends DefaultApplicationModel {
     }
 
     /**
-     * Sends the current drawing to the Floorplan publishing web app. It uses <code>CircuitBreaker</code>
-     * to ensure resiliency and <code>ImagePublishRunnable</code> to perform 3 tries with 5-second delays
-     * in between tries.
+     * Publishes the floorplan to the API.
      *
      * @param editor The editor containing the drawing to be published.
      */
     public void publishFloorplan(final DrawingEditor editor) {
         try {
-            String floorplanName = JOptionPane.showInputDialog(
-                    null, "Enter floorplan file name: ");
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            writeImageOutputFormatOnOutputStream(editor, bos);
-            byte[] data = bos.toByteArray();
-
-            ImageResource imageResource = new ImageResource();
-            imageResource.setImageData(data);
-            imageResource.setFileName(floorplanName);
-
-            CircuitBreaker publishImageCircuitBreaker = new CircuitBreaker(
-                    () -> sendPublishImageRequestAndGetResponse(imageResource),
-                    5_000,
-                    2,
-                    60_000);
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            executorService.execute(new ImagePublishRunnable(publishImageCircuitBreaker));
-            executorService.shutdown();
+            String floorplanName = UUID.randomUUID().toString();
+            ExportDrawingController.publishFloorplan(editor.getActiveView().getDrawing(), floorplanName);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(
                     null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Uses a <code>DefaultHttpClient</code> to send a POST request to the floorplan API, and returns
-     * the answer from the service as a String.
-     *
-     * @param imageResource The image resource being published.
-     * @return The response message.
-     * @throws IOException Exceptions are to be handed by the caller.
-     */
-    private String sendPublishImageRequestAndGetResponse(ImageResource imageResource) throws IOException {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        try {
-            HttpPost postRequest = new HttpPost(ArchitectResourceBundle.getFloorplanPublisherPath());
-            Gson imageResourceSerializer = GsonHelper.getImageResourceGson();
-
-            StringEntity body = new StringEntity(imageResourceSerializer.toJson(imageResource));
-            body.setContentType("application/json");
-            postRequest.setEntity(body);
-
-            HttpResponse response = httpClient.execute(postRequest);
-            if (response.getStatusLine().getStatusCode() != 200) {
-                System.out.println("Failed : HTTP error code != 200");
-                throw new RuntimeException("Failed : HTTP error code : "
-                        + response.getStatusLine().getStatusCode());
-            }
-
-            InputStream content = response.getEntity().getContent();
-            BufferedReader br = new BufferedReader(new InputStreamReader(content));
-            return br.readLine();
-        } finally {
-            httpClient.getConnectionManager().shutdown();
         }
     }
 
