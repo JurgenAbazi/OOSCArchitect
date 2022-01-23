@@ -222,10 +222,38 @@ public class ApplicationModel extends DefaultApplicationModel {
     }
 
     /**
+     * Uses the <code>ImageOutputFormat</code> class of JHotDraw to write the current
+     * drawing on the <code>OutputStream</code> which is passed as an argument to the
+     * method.
+     *
+     * @param editor The editor containing the drawing to be exported.
+     * @param stream The output stream being written on.
+     * @throws IOException Error writing on the stream. To be handled by the caller.
+     */
+    public void writeImageOutputFormatOnOutputStream(final DrawingEditor editor,
+                                                     OutputStream stream) throws IOException {
+        // CANVAS_WIDTH and CANVAS_HEIGHT are null. This causes an exception to be thrown internally
+        // in the ImageOutputFormat class when attempting to convert the drawings to an image.
+        // To solve this problem we use a hacky solution, where we explicitly set them to the width
+        // and height of the drawing area and later restore them to null (so that the canvas size in
+        // the application does not change).
+        Drawing drawing = editor.getActiveView().getDrawing();
+        Rectangle2D.Double drawingArea = drawing.getDrawingArea();
+        drawing.set(AttributeKeys.CANVAS_WIDTH, drawingArea.getWidth() + (drawingArea.getX() * 2));
+        drawing.set(AttributeKeys.CANVAS_HEIGHT, drawingArea.getHeight() + (drawingArea.getY() * 2));
+
+        ImageOutputFormat imageOutputFormat = new ImageOutputFormat();
+        imageOutputFormat.write(stream, drawing);
+
+        drawing.set(AttributeKeys.CANVAS_WIDTH, null);
+        drawing.set(AttributeKeys.CANVAS_HEIGHT, null);
+    }
+
+    /**
      * Export the drawing of the editor as a PNG.
      * Shows a <code>JFileChooser</code> to select the directory where the image will be saved.
      *
-     * @param editor The editor containing the drawing to be exported
+     * @param editor The editor containing the drawing to be exported.
      */
     private void exportDrawingAsImage(final DrawingEditor editor) {
         try {
@@ -234,22 +262,8 @@ public class ApplicationModel extends DefaultApplicationModel {
             if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                 String name = "\\" + ZonedDateTime.now().toInstant().toEpochMilli() + ".png";
                 File file = new File(fc.getSelectedFile().getAbsolutePath() + name);
-
-                // CANVAS_WIDTH and CANVAS_HEIGHT are null. This causes an exception to be thrown internally
-                // in the ImageOutputFormat class when attempting to convert the drawings to an image.
-                // To solve this problem we use a hacky solution, where we explicitly set them to the width
-                // and height of the drawing area and later restore them to null (so that the canvas size in
-                // the application does not change).
-                Drawing drawing = editor.getActiveView().getDrawing();
-                Rectangle2D.Double drawingArea = drawing.getDrawingArea();
-                drawing.set(AttributeKeys.CANVAS_WIDTH, drawingArea.getWidth() + drawingArea.getX());
-                drawing.set(AttributeKeys.CANVAS_HEIGHT, drawingArea.getHeight() + drawingArea.getY());
-
-                ImageOutputFormat imageOutputFormat = new ImageOutputFormat();
-                imageOutputFormat.write(file, drawing);
-
-                drawing.set(AttributeKeys.CANVAS_WIDTH, null);
-                drawing.set(AttributeKeys.CANVAS_HEIGHT, null);
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+                writeImageOutputFormatOnOutputStream(editor, bos);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -263,29 +277,20 @@ public class ApplicationModel extends DefaultApplicationModel {
      * to ensure resiliency and <code>ImagePublishRunnable</code> to perform 3 tries with 5-second delays
      * in between tries.
      *
-     * @param editor The editor containing the drawing to be published
+     * @param editor The editor containing the drawing to be published.
      */
     public void publishFloorplan(final DrawingEditor editor) {
         try {
             String floorplanName = JOptionPane.showInputDialog(
                     null, "Enter floorplan file name: ");
 
-            Drawing drawing = editor.getActiveView().getDrawing();
-            Rectangle2D.Double drawingArea = drawing.getDrawingArea();
-            drawing.set(AttributeKeys.CANVAS_WIDTH, drawingArea.getWidth() + (drawingArea.getX() * 2));
-            drawing.set(AttributeKeys.CANVAS_HEIGHT, drawingArea.getHeight() + (drawingArea.getY() * 2));
-
-            ImageOutputFormat imageOutputFormat = new ImageOutputFormat();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            imageOutputFormat.write(bos, drawing);
+            writeImageOutputFormatOnOutputStream(editor, bos);
             byte[] data = bos.toByteArray();
 
             ImageResource imageResource = new ImageResource();
             imageResource.setImageData(data);
             imageResource.setFileName(floorplanName);
-
-            drawing.set(AttributeKeys.CANVAS_WIDTH, null);
-            drawing.set(AttributeKeys.CANVAS_HEIGHT, null);
 
             CircuitBreaker publishImageCircuitBreaker = new CircuitBreaker(
                     () -> sendPublishImageRequestAndGetResponse(imageResource),
