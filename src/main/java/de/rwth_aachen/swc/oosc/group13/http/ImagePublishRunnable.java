@@ -1,5 +1,7 @@
 package de.rwth_aachen.swc.oosc.group13.http;
 
+import de.rwth_aachen.swc.oosc.group13.figures.toast.ToastMessage;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -36,25 +38,25 @@ public class ImagePublishRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            showSuccessMessage(circuitBreaker.call());
+            showSuccessDialog(circuitBreaker.call());
             return;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        System.out.println("Retrying in 5000ms...");
+        ToastMessage.showErrorMessage("First attempt failed. Retrying in 5 seconds...");
         try {
             Thread.sleep(5000);
-            showSuccessMessage(circuitBreaker.call());
+            showSuccessDialog(circuitBreaker.call());
             return;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        System.out.println("Retrying again in another 5000ms...");
+        ToastMessage.showErrorMessage("Retrying again in another 5 seconds...");
         try {
             Thread.sleep(5000);
-            showSuccessMessage(circuitBreaker.call());
+            showSuccessDialog(circuitBreaker.call());
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(parentComponent,
@@ -69,7 +71,7 @@ public class ImagePublishRunnable implements Runnable {
      *
      * @param response The response from the service.
      */
-    private void showSuccessMessage(String response) {
+    private void showSuccessDialog(String response) {
         JOptionPane.showMessageDialog(
                 parentComponent,
                 "Response from service:\n" + response,
