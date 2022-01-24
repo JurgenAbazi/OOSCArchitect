@@ -1,4 +1,4 @@
-package de.rwth_aachen.swc.oosc.group13.figures.toast;
+package de.rwth_aachen.swc.oosc.group13.toast;
 
 import javax.swing.*;
 import java.awt.*;

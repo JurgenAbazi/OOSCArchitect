@@ -1,6 +1,6 @@
 package de.rwth_aachen.swc.oosc.group13.http;
 
-import de.rwth_aachen.swc.oosc.group13.figures.toast.ToastMessage;
+import de.rwth_aachen.swc.oosc.group13.toast.ToastMessage;
 
 import javax.swing.*;
 import java.awt.*;
